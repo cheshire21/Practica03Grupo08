@@ -36,6 +36,26 @@ class Octree{
     }
     insert(point){
 
+        if(!this.box.contains(point)){
+            return false;
+        }
+        if(this.points.length<this.capacity){
+            this.points.push(point);
+            point.material.color.set(this.color);
+            return true;
+        }
+        /*
+        if(!this.divided){
+            this.subdivide();
+        }*/
+        return (this.sonNOF.insert(point) ||
+            this.sonNEF.insert(point) ||
+            this.sonSOF.insert(point) ||
+            this.sonSEF.insert(point) ||
+            this.sonNOB.insert(point) ||
+            this.sonNEB.insert(point) ||
+            this.sonSOB.insert(point) ||
+            this.sonSEB.insert(point) );
     }
     query(box,found){
 
