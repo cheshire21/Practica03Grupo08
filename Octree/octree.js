@@ -1,4 +1,4 @@
-let alpha = 0.02;
+let alpha = 0.04;
 
 //CLase Punto
 class Point{
@@ -6,7 +6,7 @@ class Point{
         this.x=x;
         this.y=y;
         this.z=z;
-        this.geometry = new THREE.SphereGeometry( 0.5, 10, 10 );
+        this.geometry = new THREE.SphereGeometry( 1, 10, 10 );
         this.material = new THREE.MeshBasicMaterial({color: 0xffffff});
         this.sphere = new THREE.Mesh( this.geometry, this.material );
         this.sphere.position.set(x,y,z);
@@ -23,13 +23,15 @@ class Box{
         this.h=h;
         this.d=d;
     }
-    contains(point){
-        return (point.x >= (this.x - this.w) && point.x <= (this.x + this.w) && 
-        point.y >= (this.y - this.h) && point.y <= (this.y + this.h) &&
-        point.z >= (this.z - this.d) && point.z <= (this.z + this.d));
+    contains(point){ 
+        return (point.x >= (this.x - this.w) && point.x < (this.x + this.w) && 
+        point.y >= (this.y - this.h) && point.y < (this.y + this.h) &&
+        point.z >= (this.z - this.d) && point.z < (this.z + this.d));
     }
-    intersects(box){
-
+    intersects(range){ // metodo que retorna true si el rango y la caja no se intersectan
+        return (range.x - range.w > this.x + this.w  || range.x + range.w < this.x - this.w  ||
+        range.y - range.h > this.y + this.h  || range.y + range.h < this.y - this.h  ||
+        range.z - range.d > this.z + this.d  ||range.z + range.d < this.z - this.d);
     }
 }
 // Clase Octree
@@ -82,7 +84,6 @@ class Octree{
         }
         if(this.points.length<this.capacity){
             this.points.push(point);
-            point.material.color.set(this.color);
             return true;
         }
         
@@ -99,7 +100,27 @@ class Octree{
             this.southwestBack.insert(point) ||
             this.southeastBack.insert(point) );
     }
-    query(box,found){
-
+    query(range,found){
+        if(this.box.intersects(range)){
+            return;
+        }
+        else{
+            for(let p of this.points){
+                if(range.contains(p)){
+                    p.material.color.set(0xff0f00);
+                    found.push(p);
+                }
+            }
+            if(this.divided){
+                this.northwestFront.query(range,found);
+                this.northeastFront.query(range,found);
+                this.southwestFront.query(range,found);
+                this.southeastFront.query(range,found);
+                this.northwestBack.query(range,found);
+                this.northeastBack.query(range,found);
+                this.southwestBack.query(range,found);
+                this.southeastBack.query(range,found);
+            }
+        }
     }
 }
