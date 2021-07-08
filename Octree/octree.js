@@ -1,9 +1,16 @@
+let alpha = 0.02;
+
 //CLase Punto
 class Point{
     constructor(x,y,z){
         this.x=x;
         this.y=y;
         this.z=z;
+        this.geometry = new THREE.SphereGeometry( 0.5, 10, 10 );
+        this.material = new THREE.MeshBasicMaterial({color: 0xffffff});
+        this.sphere = new THREE.Mesh( this.geometry, this.material );
+        this.sphere.position.set(x,y,z);
+        scene.add( this.sphere );
     }
 }
 //Clase Caja
@@ -17,14 +24,11 @@ class Box{
         this.d=d;
     }
     contains(point){
-        return (point.x >= (this.x - this.w) && 
-        point.x <= (this.x + this.w) && 
-        point.y >= (this.y - this.h) && 
-        point.y <= (this.y + this.h) &&
-        point.z >= (this.z - this.d) &&
-        point.z <= (this.z + this.d));
+        return (point.x >= (this.x - this.w) && point.x <= (this.x + this.w) && 
+        point.y >= (this.y - this.h) && point.y <= (this.y + this.h) &&
+        point.z >= (this.z - this.d) && point.z <= (this.z + this.d));
     }
-    intersectc(box){
+    intersects(box){
 
     }
 }
@@ -35,6 +39,12 @@ class Octree{
         this.capacity=n;
         this.points=[];
         this.divided=false;
+        // grafica el cubo 
+        this.geometry = new THREE.BoxGeometry(box.w*2,box.h*2,box.d*2);
+        this.material = new THREE.MeshBasicMaterial( {color: 0xffffff, opacity: alpha, transparent: true, } );
+        this.cube = new THREE.Mesh( this.geometry, this.material );
+        this.cube.position.set(box.x,box.y,box.z);
+        scene.add(this.cube);
     }
     subdivide(){
         let x = this.box.x;
@@ -53,16 +63,16 @@ class Octree{
         let sob = new Box(x-w,y+h,z+d,w,h,d);
         let seb = new Box(x+w,y+h,z+d,w,h,d);
 
-        this.sonNOF = new Octree(nof,this.capacity);
-        this.sonNEF = new Octree(nef,this.capacity);
-        this.sonSOF = new Octree(sof,this.capacity);
-        this.sonSEF = new Octree(sef,this.capacity);
-        this.sonNOB = new Octree(nob,this.capacity);
-        this.sonNEB = new Octree(neb,this.capacity);
-        this.sonSOB = new Octree(sob,this.capacity);
-        this.sonSEB = new Octree(seb,this.capacity);
+        this.northwestFront = new Octree(nof,this.capacity);
+        this.northeastFront = new Octree(nef,this.capacity);
+        this.southwestFront = new Octree(sof,this.capacity);
+        this.southeastFront = new Octree(sef,this.capacity);
+        this.northwestBack = new Octree(nob,this.capacity);
+        this.northeastBack = new Octree(neb,this.capacity);
+        this.southwestBack = new Octree(sob,this.capacity);
+        this.southeastBack = new Octree(seb,this.capacity);
 
-        alpha = alpha + 0.1;
+        alpha = alpha + 0.01;
         this.divided = true;
     }
     insert(point){
@@ -75,18 +85,19 @@ class Octree{
             point.material.color.set(this.color);
             return true;
         }
-        /*
+        
         if(!this.divided){
             this.subdivide();
-        }*/
-        return (this.sonNOF.insert(point) ||
-            this.sonNEF.insert(point) ||
-            this.sonSOF.insert(point) ||
-            this.sonSEF.insert(point) ||
-            this.sonNOB.insert(point) ||
-            this.sonNEB.insert(point) ||
-            this.sonSOB.insert(point) ||
-            this.sonSEB.insert(point) );
+        }
+        return (
+            this.northwestFront.insert(point) ||
+            this.northeastFront.insert(point) ||
+            this.southwestFront.insert(point) ||
+            this.southeastFront.insert(point) ||
+            this.northwestBack.insert(point) ||
+            this.northeastBack.insert(point) ||
+            this.southwestBack.insert(point) ||
+            this.southeastBack.insert(point) );
     }
     query(box,found){
 
