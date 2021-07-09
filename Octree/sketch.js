@@ -7,9 +7,9 @@ var controls = new THREE.OrbitControls( camera, renderer.domElement );
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
-camera.position.y = 250;
-camera.position.x = -200;
-camera.position.z = 400;
+camera.position.y = 340;
+camera.position.x = -155;
+camera.position.z = 380;
 
 // coloca los ejes el punto origen con x y z 
 var axisHelper = new THREE.AxisHelper(10);
@@ -17,6 +17,10 @@ scene.add( axisHelper );
 
 var octree;
 var sizeCube = 0;
+
+var GraphRange ;
+var range;
+var found = []
 
 function createOctree(size,capacity){
     sizeCube = size;
@@ -33,7 +37,20 @@ function random(num){
     }
 }
 /* -----------------------------query------------------------------ */
+function cleanRange(){
+    //creo cubo 
+    range = null;
+    for(let p of found){    //vuelve blanco los puntos antes de eliminar el cubo
+        p.material.color.set(0xffffff);
+        
+    }
+    // elimino cubo de la grafica
+    scene.remove(GraphRange);
+    GraphRange = null;
+    
+}
 function createRange(size, x ,y,z){
+    cleanRange();
     let rangeSize = ((size == undefined)? 30 : size);
     let rangex = ((x == undefined)? Math.random()*sizeCube : x);
     let rangey = ((y == undefined)? Math.random()*sizeCube : y);
@@ -53,17 +70,7 @@ function createRange(size, x ,y,z){
     GraphRange = cube;
     scene.add(GraphRange); // se inserta en la escena
 }
-function cleanRange(){
-    //creo cubo 
-    range = null;
-    for(let p of found){    //vuelve blanco los puntos antes de eliminar el cubo
-        p.material.color.set(0xffffff);
-        
-    }
-    // elimino cubo de la grafica
-    scene.remove(GraphRange);
-    GraphRange = null;
-}
+
 
 function cleanScene(){
     scene = new THREE.Scene(); //crea una nueva escena
